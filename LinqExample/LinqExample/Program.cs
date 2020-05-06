@@ -251,18 +251,22 @@ namespace LinqExample
 
             IEnumerable<Incentives> incentives = from i in incentivesList select i;
             Console.WriteLine("37. Get difference between JOINING_DATE and INCENTIVE_DATE from employee and incentives table");
-            //List<DateTime> q37 = (from i in incentives select i.INCENTIVE_DATE).ToList();
-            //List<DateTime> e_q37 = (from i in employeeList select i.JOINING_DATE).ToList();
-            //foreach (var i in q37)
-            //{
-            //    foreach(var e in e_q37)
-            //    {
-            //        
-            //    }                
-            //}
+            var q37 = from emp in employeeList
+                      from inc in incentivesList
+                      where emp.EMPLOYEE_ID == inc.EMPLOYEE_REF_ID
+                      select new { emp.EMPLOYEE_ID, emp.JOINING_DATE, emp.FIRST_NAME, datediff = Math.Abs((emp.JOINING_DATE - inc.INCENTIVE_DATE).Days) };
+            foreach (var i in q37)
+                Console.WriteLine($"Id :{i.EMPLOYEE_ID} Joining date: {i.JOINING_DATE} Name: {i.FIRST_NAME} Difference: {i.datediff} ");
 
-            //var q38 = from system in System
-            //        select getDate();
+            Console.WriteLine("\n39.  Get names of employees from employee table who has '%' in Last_Name.");
+            foreach (Employee i in employeeList)
+            {
+                if (i.LAST_NAME.Contains('%'))
+                {
+                    Console.WriteLine("\tLastName : " + i.LAST_NAME);
+                }
+            }
+
             Console.WriteLine("\n39.  Get names of employees from employee table who has '%' in Last_Name.");
             foreach (Employee i in employeeList)
             {
@@ -453,29 +457,45 @@ namespace LinqExample
                 Console.WriteLine("Employee Id : " + i);
 
             Console.WriteLine("63. Select 20 % of salary from John , 10 % of Salary for Roy and for other 15 % of salary from employee table");
-            foreach (var i in query1)
-            {
-                double Jsal = 0.0, Rsal = 0.0, Osal = 0.0;
-                Regex regex = new Regex("[^A-Za-z]");
-                if (i.FIRST_NAME == "John")
-                {
-                    Jsal = i.SALARY * .2;
-                    Console.WriteLine("After 20% of John : " + Jsal);
-                }
-                else if (i.FIRST_NAME == "Roy")
-                {
-                    Rsal = i.SALARY * .1;
-                    Console.WriteLine("After 10% of Roy : " + Rsal);
-                }
-                else if (regex.IsMatch(i.FIRST_NAME))
-                {
-                    Osal = i.SALARY * .15;
-                    Console.WriteLine("After 15% of Others : " + Osal);
-                }
-                Console.WriteLine("Name : " + i.FIRST_NAME + "\tSalary : " + i.SALARY);
-                //Console.WriteLine(Jsal +  " " + Rsal + " " + Osal);
-            }
-            
+            var q63 =
+                (
+                    (from e in employeeList
+                     select new
+                     {
+                         name = e.FIRST_NAME,
+                         sal = e.SALARY,
+                         text =
+                         (
+                            e.FIRST_NAME == "John" ? Convert.ToDouble(e.SALARY) * .20 :
+                            e.FIRST_NAME == "Roy" ? Convert.ToDouble(e.SALARY) * .10 : Convert.ToDouble(e.SALARY) * 0.15
+                         )
+                     })
+
+                );
+            foreach (var i in q63)
+                Console.WriteLine("Name:  " + i.name + "\tSalary: "+ i.sal + "\tAfter salary : " + i.text);
+            //foreach (var i in query1)
+            //{
+            //    double Jsal = 0.0, Rsal = 0.0, Osal = 0.0;
+            //    Regex regex = new Regex("[^A-Za-z]");
+            //    if (i.FIRST_NAME == "John")
+            //    {
+            //        Jsal = i.SALARY * .2;
+            //        Console.WriteLine("After 20% of John : " + Jsal);
+            //    }
+            //    else if (i.FIRST_NAME == "Roy")
+            //    {
+            //        Rsal = i.SALARY * .1;
+            //        Console.WriteLine("After 10% of Roy : " + Rsal);
+            //    }
+            //    else if (regex.IsMatch(i.FIRST_NAME))
+            //    {
+            //        Osal = i.SALARY * .15;
+            //        Console.WriteLine("After 15% of Others : " + Osal);
+            //    }
+            //    Console.WriteLine("Name : " + i.FIRST_NAME + "\tSalary : " + i.SALARY);
+            //}
+
             Console.WriteLine("64. Select Banking as 'Bank Dept', Insurance as 'Insurance Dept' and Services as 'Services Dept' from employee table");
             var q64 = employeeList.Select(s => new { Department = s.DEPARTMENT == "Banking" ? "Bank Dept" : s.DEPARTMENT == "Insurance" ? "Insurance Dept" : s.DEPARTMENT == "Services" ? "Services Dept" : "-" });
             foreach(var i in q64)
